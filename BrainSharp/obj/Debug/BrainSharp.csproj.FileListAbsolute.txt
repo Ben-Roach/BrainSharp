@@ -1,0 +1,7 @@
+C:\Users\benro\Desktop\BrainSharp\BrainSharp\bin\Debug\BrainSharp.exe.config
+C:\Users\benro\Desktop\BrainSharp\BrainSharp\bin\Debug\BrainSharp.exe
+C:\Users\benro\Desktop\BrainSharp\BrainSharp\bin\Debug\BrainSharp.pdb
+C:\Users\benro\Desktop\BrainSharp\BrainSharp\obj\Debug\BrainSharp.csproj.CoreCompileInputs.cache
+C:\Users\benro\Desktop\BrainSharp\BrainSharp\obj\Debug\BrainSharp.exe
+C:\Users\benro\Desktop\BrainSharp\BrainSharp\obj\Debug\BrainSharp.pdb
+C:\Users\benro\Desktop\BrainSharp\BrainSharp\obj\Debug\BrainSharp.csprojAssemblyReference.cache
