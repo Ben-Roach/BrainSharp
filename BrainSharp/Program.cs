@@ -2,20 +2,20 @@
 using System.IO;
 using System.Text;
 
-/* Brainsharp
+/* BrainSharp
  * By Benjamin Roach
  * 
  */
 
-namespace Brainsharp
+namespace BrainSharp
 {
-    public class BrainFuckExecutionException : Exception
+    public class BrainfuckExecutionException : Exception
     {
-        public BrainFuckExecutionException() { }
+        public BrainfuckExecutionException() { }
 
-        public BrainFuckExecutionException(string message) : base(message) { }
+        public BrainfuckExecutionException(string message) : base(message) { }
 
-        public BrainFuckExecutionException(string message, Exception inner) : base(message, inner) { }
+        public BrainfuckExecutionException(string message, Exception inner) : base(message, inner) { }
     }
 
     public class Interpreter
@@ -90,7 +90,7 @@ namespace Brainsharp
                             }
                         }
                         if (!found)
-                            throw new BrainFuckExecutionException(FormatDebugLine("Matching ']' not found for '['"));
+                            throw new BrainfuckExecutionException(FormatDebugLine("Matching ']' not found for '['"));
                     }
                     break;
                 case ']':
@@ -113,7 +113,7 @@ namespace Brainsharp
                             }
                         }
                         if (!found)
-                            throw new BrainFuckExecutionException(FormatDebugLine("Matching '[' not found for ']'"));
+                            throw new BrainfuckExecutionException(FormatDebugLine("Matching '[' not found for ']'"));
                     }
                     break;
                 // track line number
@@ -174,7 +174,7 @@ class Program
                 Console.WriteLine("Error reading file. Aborting.");
                 return;
             }
-            Brainsharp.Interpreter interpreter = new Brainsharp.Interpreter(code);
+            BrainSharp.Interpreter interpreter = new BrainSharp.Interpreter(code);
             interpreter.Execute();
             Console.ReadLine();
         }

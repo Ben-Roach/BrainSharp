@@ -1,7 +1,7 @@
 # BrainSharp
-A set of BrainFuck development and execution tools for C#.
+A set of Brainfuck development and execution tools for C#.
 
-### Have you ever wanted to develop your apps in BrainFuck?
+### Have you ever wanted to develop your apps in Brainfuck?
 
 ### No?
 
