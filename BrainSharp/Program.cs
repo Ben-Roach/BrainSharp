@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 /* BrainSharp
@@ -28,28 +29,34 @@ namespace BrainSharp
         public int ip { get; private set; }
         // current number of steps completed
         public int step { get; private set; }
-        // data array
-        public byte[] data_array { get; private set; }
         // current source line
-        public int src_line { get; private set; }
+        public int srcLine { get; private set; }
+        // current source column
+        public int srcCol { get; private set; }
         // BF code (and maybe comments)
         public string instructions { get; private set; }
-        // current source column
-        public int src_col { get; private set; }
+        // data array size
+        public int dataArraySize { get; private set; }
+        // data array
+        public byte[] dataArray { get; private set; }
+
+        private bool verbose;
 
         /* Initializes the interpreter. Must give it BF code as a string,
          * and may specify any desired settings. Note that including comments/
          * non-BF instructions is ok, but will slow down execution.
          */
-        public Interpreter(string code, int array_size=30000, bool verbose=false)
+        public Interpreter(string code, int dataArraySize=30000, bool verbose = false)
         {
             this.dp = 0;
             this.ip = 0;
             this.step = 0;
-            this.src_line = 0;
-            this.src_col = 0;
+            this.srcLine = 0;
+            this.srcCol = 0;
             this.instructions = code;
-            this.data_array = new byte[array_size];
+            this.dataArraySize = dataArraySize;
+            this.dataArray = new byte[dataArraySize];
+            this.verbose = verbose;
         }
 
         /* Executes the BF code.
@@ -59,95 +66,128 @@ namespace BrainSharp
             while (ip < instructions.Length && (steps == 0 || step < steps))
             {
                 Step();
+                if (verbose)
+                    Console.WriteLine(FormatStepMsg());
             }
         }
 
         public void Step()
         {
-            switch (instructions[ip])
+            // true when a valid instruction is found and executed without error (takes a step)
+            bool executed = false;
+            while(!executed && ip < instructions.Length)
             {
-                // execute instructions
-                case '>':
-                    dp++;
-                    break;
-                case '<':
-                    dp--;
-                    break;
-                case '+':
-                    data_array[dp]++;
-                    break;
-                case '-':
-                    data_array[dp]--;
-                    break;
-                case '.':
-                    Console.Write((char)data_array[dp]);
-                    break;
-                case ',':
-                    data_array[dp] = (byte)Console.ReadKey().KeyChar;
-                    break;
-                case '[':
-                    if (data_array[dp] == 0)
-                    {
-                        int skip = 0; // increment with [, decrement with ]
-                        bool found = false;
-
-                        for (int i = ip + 1; i < instructions.Length; i++)
+                switch (instructions[ip])
+                {
+                    // execute instructions
+                    case '>':
+                        dp++;
+                        if (dp >= dataArraySize)
+                            throw new BrainfuckExecutionException(FormatDebugMsg("Data pointer exceeded upper bound of data array"));
+                        executed = true;
+                        break;
+                    case '<':
+                        dp--;
+                        if (dp < 0)
+                            throw new BrainfuckExecutionException(FormatDebugMsg("Data pointer exceeded lower bound of data array"));
+                        executed = true;
+                        break;
+                    case '+':
+                        dataArray[dp]++;
+                        executed = true;
+                        break;
+                    case '-':
+                        dataArray[dp]--;
+                        executed = true;
+                        break;
+                    case '.':
+                        Console.Write((char)dataArray[dp]);
+                        executed = true;
+                        break;
+                    case ',':
+                        dataArray[dp] = (byte)Console.ReadKey().KeyChar;
+                        executed = true;
+                        break;
+                    case '[':
+                        if (dataArray[dp] == 0)
                         {
-                            if (instructions[i] == '[')
-                                skip++;
-                            else if (instructions[i] == ']' && skip > 0)
-                                skip--;
-                            else if (instructions[i] == ']' && skip == 0)
-                            {
-                                ip = i;
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found)
-                            throw new BrainfuckExecutionException(FormatDebugLine("Matching ']' not found for '['"));
-                    }
-                    break;
-                case ']':
-                    if (data_array[dp] != 0)
-                    {
-                        int skip = 0; // increment with ], decrement with [
-                        bool found = false;
+                            int skip = 0; // increment with [, decrement with ]
+                            bool found = false;
 
-                        for (int i = ip - 1; i >= 0; i--)
-                        {
-                            if (instructions[i] == ']')
-                                skip++;
-                            else if (instructions[i] == '[' && skip > 0)
-                                skip--;
-                            else if (instructions[i] == '[' && skip == 0)
+                            for (int i = ip + 1; i < instructions.Length; i++)
                             {
-                                ip = i;
-                                found = true;
-                                break;
+                                if (instructions[i] == '[')
+                                    skip++;
+                                else if (instructions[i] == ']' && skip > 0)
+                                    skip--;
+                                else if (instructions[i] == ']' && skip == 0)
+                                {
+                                    ip = i;
+                                    found = true;
+                                    break;
+                                }
                             }
+                            if (!found)
+                                throw new BrainfuckExecutionException(FormatDebugMsg("Matching ']' not found for '['"));
                         }
-                        if (!found)
-                            throw new BrainfuckExecutionException(FormatDebugLine("Matching '[' not found for ']'"));
-                    }
-                    break;
-                // update line number
-                case '\n':
-                    src_line++;
-                    src_col = -1; // incremented before next step
-                    break;
-                default:
-                    break;
+                        executed = true;
+                        break;
+                    case ']':
+                        if (dataArray[dp] != 0)
+                        {
+                            int skip = 0; // increment with ], decrement with [
+                            bool found = false;
+
+                            for (int i = ip - 1; i >= 0; i--)
+                            {
+                                if (instructions[i] == ']')
+                                    skip++;
+                                else if (instructions[i] == '[' && skip > 0)
+                                    skip--;
+                                else if (instructions[i] == '[' && skip == 0)
+                                {
+                                    ip = i;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found)
+                                throw new BrainfuckExecutionException(FormatDebugMsg("Matching '[' not found for ']'"));
+                        }
+                        executed = true;
+                        break;
+                    // skip non-instructions
+                    case '\n':
+                        srcLine++;
+                        srcCol = -1; // incremented before next iteration
+                        break;
+                    default:
+                        break;
+                }
+                srcCol++;
+                ip++;
             }
-            // update column number, step, and instruction pointer
-            src_col++;
             step++;
-            ip++;
         }
 
-        private string FormatDebugLine(string message)
+        private string FormatDebugMsg(string message)
         {
-            return string.Format("[{0}, {1}]: {2}", src_line, src_col, message);
+            return string.Format("[{0}, {1}]: {2}", srcLine, srcCol, message);
+        }
+
+        private string FormatStepMsg()
+        {
+            int dataPreviewStart = dp < 10 ? 0 : dp - 10;
+            int dataPreviewEnd = dataArray.Length < dp + 11 ? dataArray.Length : dp + 10;
+            StringBuilder dataPreview = new StringBuilder();
+            for (int i = dataPreviewStart; i <= dp; i++)
+                dataPreview.Append(dataArray[i].ToString() + " ");
+            string arrow = new string(' ', dataPreview.Length + 4) + "^";
+            for (int i = dp + 1; i <= dataPreviewEnd; i++)
+                dataPreview.Append(dataArray[i].ToString() + " ");
+            string instructionPreview = ip < instructions.Length ? instructions[ip].ToString() : "END";
+            return string.Format("[{0}, {1}]: Step {2}, Instruction: {3}\nData: {4}\n{5}\n",
+                srcLine, srcCol, step, instructionPreview, dataPreview, arrow);
         }
     }
 
@@ -157,7 +197,7 @@ namespace BrainSharp
     {
         private static readonly char[] allowedChars = new char[] { '<', '>', '+', '-', '.', ',', '[', ']' };
         // Gets a minified version of the given BF code
-        public static string GetMinified(string source)
+        public static string Minify(string source)
         {
             StringBuilder sb = new StringBuilder();
             foreach (char c in source)
@@ -167,6 +207,13 @@ namespace BrainSharp
             }
             return sb.ToString();
         }
+    }
+
+    /* Transpiles BF code to other (more) popular languages.
+     */
+    public static class Transpiler
+    {
+        // TODO
     }
 
     // Provides a command-line inteface for BrainSharp.
@@ -180,6 +227,9 @@ namespace BrainSharp
             if (args.Length >= 2 && args[0] == "-e")
             {
                 string code;
+                bool verbose = false;
+                int arraySize = 30000;
+                // read from file
                 try
                 {
                     code = File.ReadAllText(args[1]);
@@ -189,12 +239,15 @@ namespace BrainSharp
                     Console.WriteLine("Error reading file. Aborting.");
                     return;
                 }
-                Interpreter interpreter = new Interpreter(code);
+                // check switches
+                if (args.Contains("-v"))
+                    verbose = true;
+                // execute interpreter
+                Interpreter interpreter = new Interpreter(code, arraySize, verbose);
                 interpreter.Execute();
-                Console.ReadLine();
             }
             // minify mode (-m <filepath>)
-            if (args.Length >= 2 && args[0] == "-m")
+            else if (args.Length >= 2 && args[0] == "-m")
             {
                 string code;
                 try
@@ -206,14 +259,18 @@ namespace BrainSharp
                     Console.WriteLine("Error reading file. Aborting.");
                     return;
                 }
-                Console.WriteLine(Minifier.GetMinified(code));
+                Console.WriteLine(Minifier.Minify(code));
             }
             // no match, show help
             else
             {
-                Console.WriteLine(@"Usage:
-  BrainSharp.exe -e <filepath>    Execute a Brainfuck file
-  BrainSharp.exe -m <filepath>    Minify a Brainfuck file");
+                Console.WriteLine(@"--------------------
+BrainSharp by Benjamin Roach
+Usage:
+  BrainSharp.exe -e <filepath> [-v]   Execute a Brainfuck file
+    -v   Verbose mode
+  BrainSharp.exe -m <filepath>        Minify a Brainfuck file
+--------------------");
                 return;
             }
         }
