@@ -48,7 +48,18 @@ namespace BrainSharp
                 {
                     settings.Verbose = true;
                 }
-                
+                if (args.Contains("-d"))
+                {
+                    int argIdx = Array.IndexOf(args, "-d");
+                    if (argIdx < args.Length && int.TryParse(args[argIdx], out int size))
+                    {
+                        settings.DataArraySize = size;
+                    }
+                }
+                if (args.Contains("-m"))
+                {
+                    source = Minifier.Minify(source);
+                }
                 
                 // execute interpreter
                 var interpreter = new Interpreter(source, settings);
@@ -78,7 +89,8 @@ Usage:
   BrainSharp.exe -e <filepath> [ -v | -d <SIZE> | -m ]
     Execute a Brainfuck source file.
     -v   Verbose mode
-
+    -d   Specify data array size (default 30000)
+    -m   Minify first (faster if source contains many comments)
   BrainSharp.exe -m <filepath>
     Minify a Brainfuck file.
 --------------------");
@@ -87,4 +99,3 @@ Usage:
         }
     }
 }
-
