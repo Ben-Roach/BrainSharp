@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -8,57 +7,36 @@ namespace BrainSharpUnitTest
     [TestClass]
     public class UnitTest
     {
-        string TestSourcesPath = "../../TestSources/";
+        const string TestSourcesPath = "../../TestSources";
 
 
         [TestMethod]
-        public void TestHelloWorld()
+        [DataRow("helloworld1.bf", "", "Hello World!\n")]
+        [DataRow("helloworld2.bf", "", "Hello World!\n")]
+        [DataRow("helloworld3.bf", "", "Hello World!\n")]
+        [DataRow("rot13.bf", "Hello World!", "Uryyb Jbeyq!")]
+        public void TestMethod(string sourceFile, string inputString, string expectedOutput)
         {
-            var testCases = new List<string>()
+            try
             {
-                Path.Combine(TestSourcesPath, $"helloworld1.bf"),
-                Path.Combine(TestSourcesPath, $"helloworld2.bf"),
-                Path.Combine(TestSourcesPath, $"helloworld3.bf")
-            };
-
-            foreach (string testCase in testCases)
-            {
-                using (var istream = new StringReader(""))
+                using (var istream = new StringReader(inputString))
                 using (var ostream = new StringWriter())
                 {
-                    string source = File.ReadAllText(testCase);
+                    string source = File.ReadAllText(Path.Combine(TestSourcesPath, sourceFile));
                     var settings = new BrainSharp.InterpreterSettings();
                     settings.InputStream = istream;
                     settings.OutputStream = ostream;
                     var interpreter = new BrainSharp.Interpreter(source, settings);
+
                     interpreter.Execute();
-                    Assert.AreEqual("Hello World!\n", settings.OutputStream.ToString(), $"Input: {testCase} Output: {settings.OutputStream}");
+
+                    Assert.AreEqual(expectedOutput, ostream.ToString(),
+                        $"Source: {sourceFile}, Input: {inputString}, Expected: {expectedOutput}, Output: {ostream}");
                 }
             }
-        }
-
-
-        [TestMethod]
-        public void TestRot13()
-        {
-            var testCases = new List<string>()
+            catch (Exception e)
             {
-                "Hello World!"
-            };
-
-            foreach (string testCase in testCases)
-            {
-                using (var istream = new StringReader(testCase))
-                using (var ostream = new StringWriter())
-                {
-                    string source = File.ReadAllText(Path.Combine(TestSourcesPath, "rot13.bf"));
-                    var settings = new BrainSharp.InterpreterSettings();
-                    settings.InputStream = istream;
-                    settings.OutputStream = ostream;
-                    var interpreter = new BrainSharp.Interpreter(source, settings);
-                    interpreter.Execute();
-                    Assert.AreEqual("Uryyb Jbeyq!", settings.OutputStream.ToString(), $"Input: {testCase} Output: {settings.OutputStream}");
-                }
+                throw new Exception($"Exception while running test case {sourceFile}, {inputString}:", e);
             }
         }
     }
