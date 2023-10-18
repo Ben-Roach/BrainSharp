@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Collections.Generic;
 
@@ -13,7 +14,7 @@ namespace BrainSharp
 
         /* Generates a minified version of the given BF code.
          */
-        public static string Minify(string source)
+        public static void Minify(string source, TextWriter output)
         {
             StringBuilder sb = new StringBuilder();
             foreach (char c in source)
@@ -21,7 +22,7 @@ namespace BrainSharp
                 if (allowedChars.Contains(c))
                     sb.Append(c);
             }
-            return sb.ToString();
+            output.Write(sb.ToString());
         }
     }
 }

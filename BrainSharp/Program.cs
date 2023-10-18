@@ -22,6 +22,22 @@ namespace BrainSharp
 
     class Program
     {
+        const string HelpString =
+@"--------------------
+BrainSharp by Ben Roach
+Usage:
+  BrainSharp.exe -e <path> [options]
+    Execute a Brainfuck source file.
+    -o <path>   Specify output file path
+    -d          Debug mode
+    -m          Minify first (faster if source contains many comments)
+    -a <size>   Specify data array size (default 30000)
+  BrainSharp.exe -m <path> [options]
+    Minify a Brainfuck source file.
+    -o <path>   Specify output file path
+--------------------";
+
+
         // larger data values than char?
         // source code streaming?
         // transpiler?
@@ -44,56 +60,93 @@ namespace BrainSharp
 
                 // command-line options
                 var settings = new InterpreterSettings();
-                if (args.Contains("-v"))
+
+                FileStream outfile = null;
+                StreamWriter output = null;
+                if (args.Contains("-o"))
                 {
-                    settings.Verbose = true;
+                    int argIdx = Array.IndexOf(args, "-o") + 1;
+                    if (argIdx < args.Length)
+                    {
+                        // close these handles later
+                        outfile = File.OpenWrite(args[argIdx]);
+                        output = new StreamWriter(outfile);
+                        settings.OutputStream = output;
+                    }
+
+                    Console.WriteLine(HelpString);
+                    return;
                 }
                 if (args.Contains("-d"))
                 {
-                    int argIdx = Array.IndexOf(args, "-d");
+                    settings.Debug = true;
+                }
+                if (args.Contains("-m"))
+                {
+                    using (StringWriter sw = new StringWriter())
+                    {
+                        Minifier.Minify(source, sw);
+                        source = sw.ToString();
+                    }
+                }
+                if (args.Contains("-a"))
+                {
+                    int argIdx = Array.IndexOf(args, "-a") + 1;
                     if (argIdx < args.Length && int.TryParse(args[argIdx], out int size))
                     {
                         settings.DataArraySize = size;
                     }
-                }
-                if (args.Contains("-m"))
-                {
-                    source = Minifier.Minify(source);
+
+                    Console.WriteLine(HelpString);
+                    return;
                 }
                 
                 // execute interpreter
                 var interpreter = new Interpreter(source, settings);
                 interpreter.Execute();
+
+                // close file output handles, if opened
+                outfile?.Close();
+                output?.Close();
             }
             // minify mode
             else if (args.Length >= 2 && args[0] == "-m")
             {
-                string code;
+                string source;
                 try
                 {
-                    code = File.ReadAllText(args[1]);
+                    source = File.ReadAllText(args[1]);
                 }
                 catch
                 {
                     Console.WriteLine("Error reading file. Aborting.");
                     return;
                 }
-                Console.WriteLine(Minifier.Minify(code));
+                
+                if (args.Contains("-o"))
+                {
+                    int argIdx = Array.IndexOf(args, "-o") + 1;
+                    if (argIdx < args.Length)
+                    {
+                        using (FileStream outfile = File.OpenWrite(args[argIdx]))
+                        using (StreamWriter output = new StreamWriter(outfile))
+                        {
+                            Minifier.Minify(source, output);
+                        }
+                    }
+
+                    Console.WriteLine(HelpString);
+                    return;
+                }
+                else
+                {
+                    Minifier.Minify(source, Console.Out);
+                }
             }
             // no match, show help
             else
             {
-                Console.WriteLine(@"--------------------
-BrainSharp by Ben Roach
-Usage:
-  BrainSharp.exe -e <filepath> [ -v | -d <SIZE> | -m ]
-    Execute a Brainfuck source file.
-    -v   Verbose mode
-    -d   Specify data array size (default 30000)
-    -m   Minify first (faster if source contains many comments)
-  BrainSharp.exe -m <filepath>
-    Minify a Brainfuck file.
---------------------");
+                Console.WriteLine(HelpString);
                 return;
             }
         }

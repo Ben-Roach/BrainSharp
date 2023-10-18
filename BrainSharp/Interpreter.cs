@@ -8,7 +8,7 @@ namespace BrainSharp
      */
     public class InterpreterSettings
     {
-        public bool Verbose { get; set; } = false;
+        public bool Debug { get; set; } = false;
         public TextReader InputStream { get; set; } = Console.In;
         public TextWriter OutputStream { get; set; } = Console.Out;
         public int DataArraySize { get; set; } = 30000;
@@ -63,7 +63,7 @@ namespace BrainSharp
             while (ip < instructions.Length && (settings.MaxSteps == 0 || step < settings.MaxSteps))
             {
                 Step();
-                if (settings.Verbose)
+                if (settings.Debug)
                 {
                     settings.OutputStream.WriteLine(FormatStepMsg());
                 }
