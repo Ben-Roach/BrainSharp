@@ -40,6 +40,7 @@ Usage:
 
         // larger data values than char?
         // source code streaming?
+        // step debugger?
         // transpiler?
         static void Main(string[] args)
         {
@@ -68,10 +69,18 @@ Usage:
                     int argIdx = Array.IndexOf(args, "-o") + 1;
                     if (argIdx < args.Length)
                     {
-                        // close these handles later
-                        outfile = File.OpenWrite(args[argIdx]);
-                        output = new StreamWriter(outfile);
-                        settings.OutputStream = output;
+                        try
+                        {
+                            // close these handles later
+                            outfile = File.OpenWrite(args[argIdx]);
+                            output = new StreamWriter(outfile);
+                            settings.OutputStream = output;
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Error opening file. Aborting.");
+                            return;
+                        }
                     }
 
                     Console.WriteLine(HelpString);
@@ -128,10 +137,18 @@ Usage:
                     int argIdx = Array.IndexOf(args, "-o") + 1;
                     if (argIdx < args.Length)
                     {
-                        using (FileStream outfile = File.OpenWrite(args[argIdx]))
-                        using (StreamWriter output = new StreamWriter(outfile))
+                        try
                         {
-                            Minifier.Minify(source, output);
+                            using (FileStream outfile = File.OpenWrite(args[argIdx]))
+                            using (StreamWriter output = new StreamWriter(outfile))
+                            {
+                                Minifier.Minify(source, output);
+                            }
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Error opening file. Aborting.");
+                            return;
                         }
                     }
 
