@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -201,22 +202,36 @@ namespace BrainSharp
 
         private string FormatStepMsg()
         {
+            int width = 10;
             StringBuilder dataPreview = new StringBuilder();
-            int dataPreviewStart = dp < 10 ? 0 : dp - 10;
-            int dataPreviewEnd = dataArray.Length < dp + 11 ? dataArray.Length : dp + 10;
+            int dataPreviewStart = dp < width ? 0 : dp - width;
+            int dataPreviewEnd = dataArray.Length < dp + width + 1 ? dataArray.Length : dp + width;
             for (int i = dataPreviewStart; i <= dp; i++)
             {
                 dataPreview.Append(dataArray[i].ToString() + " ");
             }
 
-            string arrow = new string(' ', dataPreview.Length + 4) + "^";
+            string dataArrow = new string(' ', dataPreview.Length) + "^";
             for (int i = dp + 1; i <= dataPreviewEnd; i++)
             {
                 dataPreview.Append(dataArray[i].ToString() + " ");
             }
 
-            string instructionPreview = ip < instructions.Length ? instructions[ip].ToString() : "END";
-            return $"[{srcLine}, {srcCol}]: Step {step}, Instruction: {instructionPreview}\nData: {dataPreview}\n{arrow}\n";
+            StringBuilder instrPreview = new StringBuilder();
+            int instrPreviewStart = ip < width ? 0 : ip - width;
+            int instrPreviewEnd = instructions.Length < ip + width + 1 ? instructions.Length : ip + width;
+            for (int i = instrPreviewStart; i <= ip; i++)
+            {
+                instrPreview.Append(instructions[i].ToString() + " ");
+            }
+
+            string instrArrow = new string(' ', instrPreview.Length) + "^";
+            for (int i = ip + 1; i <= instrPreviewEnd; i++)
+            {
+                instrPreview.Append(instructions[i].ToString() + " ");
+            }
+
+            return $"[{srcLine}, {srcCol}]: Step {step}\nInstructions:\n{instrPreview}\n{instrArrow}\nData:\n{dataPreview}\n{dataArrow}\n";
         }
     }
 }
