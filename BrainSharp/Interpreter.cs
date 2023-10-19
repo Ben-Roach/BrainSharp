@@ -62,18 +62,20 @@ namespace BrainSharp
         {
             while (ip < instructions.Length && (settings.MaxSteps == 0 || step < settings.MaxSteps))
             {
-                Step();
-                if (settings.Debug)
+                while (Step())
                 {
-                    settings.OutputStream.WriteLine(FormatStepMsg());
+                    if (settings.Debug)
+                    {
+                        settings.OutputStream.WriteLine(FormatStepMsg());
+                    }
                 }
             }
         }
 
 
-        public void Step()
+        public bool Step()
         {
-            while(ip < instructions.Length)
+            if (ip < instructions.Length)
             {
                 switch (instructions[ip])
                 {
@@ -88,7 +90,6 @@ namespace BrainSharp
                         dp--;
                         if (dp < 0)
                             throw new BrainSharpExecutionException(FormatDebugMsg("Data pointer exceeded lower bound of data array"));
-
                         break;
 
                     case '+':
@@ -182,8 +183,13 @@ namespace BrainSharp
                 }
                 srcCol++;
                 ip++;
+                step++;
+                return true;
             }
-            step++;
+            else
+            {
+                return false;
+            }
         }
 
 

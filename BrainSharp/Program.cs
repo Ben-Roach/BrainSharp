@@ -94,7 +94,7 @@ Usage:
                 {
                     using (StringWriter sw = new StringWriter())
                     {
-                        Minifier.Minify(source, sw);
+                        Minifier.Execute(source, sw);
                         source = sw.ToString();
                     }
                 }
@@ -142,7 +142,7 @@ Usage:
                             using (FileStream outfile = File.OpenWrite(args[argIdx]))
                             using (StreamWriter output = new StreamWriter(outfile))
                             {
-                                Minifier.Minify(source, output);
+                                Minifier.Execute(source, output);
                             }
                         }
                         catch
@@ -157,7 +157,7 @@ Usage:
                 }
                 else
                 {
-                    Minifier.Minify(source, Console.Out);
+                    Minifier.Execute(source, Console.Out);
                 }
             }
             // no match, show help

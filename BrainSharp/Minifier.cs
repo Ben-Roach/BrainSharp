@@ -14,7 +14,7 @@ namespace BrainSharp
 
         /* Generates a minified version of the given BF code.
          */
-        public static void Minify(string source, TextWriter output)
+        public static void Execute(string source, TextWriter output)
         {
             StringBuilder sb = new StringBuilder();
             foreach (char c in source)
