@@ -1,10 +1,27 @@
 # BrainSharp
-A set of Brainfuck development and execution tools for C#.
+### A set of simple Brainfuck development tools for .NET
 
-### Have you ever wanted to develop your apps in Brainfuck?
+Have you ever wanted to develop your apps in Brainfuck?
 
-**No?**
+No?
 
-**Fuck.**
+<sup>Fuck.</sup>
 
-### Well, regardless, I wrote this. I call it BrainSharp.
+In case you change your mind, I've made BrainSharp. It includes a code executor (with built-in debugger) and a minifer, with more tools on the way.
+
+## Executor
+
+`BrainSharp.exe -e <path> [options]`
+- Execute a Brainfuck source file.
+- Options:
+    - `-o <path>` Specify output file path
+    - `-d` Debug mode
+    - `-m` Minify first (faster if source contains many comments)
+    - `-a <size>` Specify data array size (default 30000)
+
+## Minifier
+
+`BrainSharp.exe -m <path> [options]`
+- Minify a Brainfuck source file.
+- Options:
+    - `-o <path>` Specify output file path
