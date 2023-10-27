@@ -7,9 +7,11 @@ No?
 
 <sup>Fuck.</sup>
 
-In case you change your mind, I've made BrainSharp. It includes a code executor (with built-in debugger) and a minifer, with more tools on the way.
+In case you change your mind, I've made BrainSharp. The current project provides a code executor (with built-in debugger) and minifer, with more tools on the way. Each tool can be used with a simple command-line interface.
 
-## Executor
+---
+
+### Executor
 
 `BrainSharp.exe -e <path> [options]`
 - Execute a Brainfuck source file.
@@ -19,7 +21,7 @@ In case you change your mind, I've made BrainSharp. It includes a code executor 
     - `-m` Minify first (faster if source contains many comments)
     - `-a <size>` Specify data array size (default 30000)
 
-## Minifier
+### Minifier
 
 `BrainSharp.exe -m <path> [options]`
 - Minify a Brainfuck source file.
